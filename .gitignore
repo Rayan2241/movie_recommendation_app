@@ -20,6 +20,7 @@ frontend/.env.local       # Create React App specific local environment files
 frontend/.env.development.local # CRA development local env
 frontend/.env.test.local  # CRA test local env
 frontend/.env.production.local # CRA production local env
+backend/.env              # Specifically ignore backend/.env
 
 # Build and Distribution folders
 frontend/package-lock.json
