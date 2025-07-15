@@ -1,6 +1,4 @@
 // Importing necessary types from express
-// Request: Represents the incoming HTTP request to the route handler
-// Response: Represents the HTTP response that will be sent to the client
 import type { Request, Response } from "express";  
 
 // Importing validationResult function from express-validator for handling validation errors
@@ -15,7 +13,7 @@ import { generateToken } from "../utils/jwt";
 // Importing the custom AuthRequest type that extends Request with user data after authentication
 import type { AuthRequest } from "../types";  
 
-// Importing the constant messages for use in responses
+// Importing constants from the constants/messages file
 import { 
   USER_EXISTS, 
   INVALID_CREDENTIALS, 
@@ -25,6 +23,15 @@ import {
   LOGIN_SUCCESS, 
   LOGOUT_SUCCESS 
 } from "../constants/messages";  // Importing messages from the constants file
+
+// Importing status codes from the constants/httpStatusCodes file
+import { 
+  OK, 
+  CREATED, 
+  BAD_REQUEST, 
+  UNAUTHORIZED, 
+  INTERNAL_SERVER_ERROR 
+} from "../constants/http";  // Importing HTTP status codes
 
 /**
  * Registers a new user in the system.
@@ -43,7 +50,7 @@ export const register = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);  // Check for validation errors
     if (!errors.isEmpty()) {
-      return res.status(400).json({
+      return res.status(BAD_REQUEST).json({
         success: false,
         message: "Validation failed",
         errors: errors.array(),
@@ -55,7 +62,7 @@ export const register = async (req: Request, res: Response) => {
     // Check if user already exists with the provided email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(BAD_REQUEST).json({
         success: false,
         message: USER_EXISTS,  // Using the constant message
       });
@@ -72,7 +79,7 @@ export const register = async (req: Request, res: Response) => {
     const token = generateToken(String(user._id));
 
     // Respond with success message and user data
-    res.status(201).json({
+    res.status(CREATED).json({
       success: true,
       message: USER_REGISTERED,  // Using the constant message
       token,
@@ -84,7 +91,7 @@ export const register = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("Register error:", error);
-    res.status(500).json({
+    res.status(INTERNAL_SERVER_ERROR).json({
       success: false,
       message: REGISTRATION_ERROR,  // Using the constant message
     });
@@ -108,7 +115,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);  // Check for validation errors
     if (!errors.isEmpty()) {
-      return res.status(400).json({
+      return res.status(BAD_REQUEST).json({
         success: false,
         message: "Validation failed",
         errors: errors.array(),
@@ -120,7 +127,7 @@ export const login = async (req: Request, res: Response) => {
     // Find the user by email and get password hash
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      return res.status(401).json({
+      return res.status(UNAUTHORIZED).json({
         success: false,
         message: INVALID_CREDENTIALS,  // Using the constant message
       });
@@ -129,7 +136,7 @@ export const login = async (req: Request, res: Response) => {
     // Compare the password with the stored hash
     const isPasswordMatch = await user.comparePassword(password);
     if (!isPasswordMatch) {
-      return res.status(401).json({
+      return res.status(UNAUTHORIZED).json({
         success: false,
         message: INVALID_CREDENTIALS,  // Using the constant message
       });
@@ -139,7 +146,7 @@ export const login = async (req: Request, res: Response) => {
     const token = generateToken(String(user._id));
 
     // Respond with success message and user data
-    res.status(200).json({
+    res.status(OK).json({
       success: true,
       message: LOGIN_SUCCESS,  // Using the constant message
       token,
@@ -151,7 +158,7 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("Login error:", error);
-    res.status(500).json({
+    res.status(INTERNAL_SERVER_ERROR).json({
       success: false,
       message: LOGIN_ERROR,  // Using the constant message
     });
@@ -171,7 +178,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
   try {
     const user = req.user;  // Access the authenticated user
 
-    res.status(200).json({
+    res.status(OK).json({
       success: true,
       user: {
         id: user?._id,
@@ -181,7 +188,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     console.error("Get me error:", error);
-    res.status(500).json({
+    res.status(INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Server error",  // Default message in case of failure
     });
@@ -198,13 +205,13 @@ export const getMe = async (req: AuthRequest, res: Response) => {
  */
 export const logout = async (req: Request, res: Response) => {
   try {
-    res.status(200).json({
+    res.status(OK).json({
       success: true,
       message: LOGOUT_SUCCESS,  // Using the constant message
     });
   } catch (error: any) {
     console.error("Logout error:", error);
-    res.status(500).json({
+    res.status(INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Server error during logout",  // Default message in case of failure
     });
