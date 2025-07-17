@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+    "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f9fafb; /* Set background to light gray */
+}
+
+code {
+  font-family: 'Fira Code', source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 1rem; /* Set a consistent size for code blocks */
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px; /* Slightly wider scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #e4e4e7; /* Lighter gray for track */
+  border-radius: 5px; /* Rounded corners for track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4b5563; /* Darker color for thumb */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7280; /* Lighter hover color */
+}
+
+/* Loading animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Utility classes for easy layout and spacing */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.center-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+/* app.css or styles.css */
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* To make sure the form is vertically centered */
+  background-color: #f75afc; /* A subtle background color */
+}
+
+.form-box {
+  width: 100%;
+  max-width: 400px; /* Adjust width */
+  padding: 40px;
+  background-color: white;
+  border: 1px solid #ddd; /* Border to create the boundary box */
+  border-radius: 8px; /* Slight rounded corners for a cleaner look */
+  box-shadow: 0 4px 10px rgba(146, 14, 14, 0.1); /* Soft shadow for depth */
+}

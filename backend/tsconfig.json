@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ES2020", // Updated from ES2016 for more modern JS features support in Node.js
+    "lib": ["ES2020"],  // Explicitly include ES2020 library types for modern features
+    // "jsx": "preserve", // Not needed for a Node.js backend
+
+    /* Modules */
+    "module": "CommonJS",  // Correct for Node.js's default module system
+    "rootDir": "./src",    // Crucial: Tells TS where your source code lives
+    "outDir": "./dist",    // Crucial: Where compiled JS files will be placed
+    "esModuleInterop": true, // Very important for correct `import` statements with CommonJS modules
+    "forceConsistentCasingInFileNames": true, // Good practice for consistent file paths
+    "resolveJsonModule": true, // Allows importing .json files directly
+
+    // **CRITICAL FOR YOUR 'process' ERROR**
+    "types": ["node", "express", "mongoose", "jsonwebtoken"], // Explicitly list type packages
+
+    /* Emit */
+    "sourceMap": true, // Good for debugging compiled JavaScript back to TypeScript
+
+    /* Type Checking */
+    "strict": true, // Highly recommended for strong type safety
+    "skipLibCheck": true // Speeds up compilation by skipping type checking of declaration files
+  },
+  "include": [
+    "src/**/*.ts" // Tells TypeScript to include all .ts files in the src directory and its subdirectories
+  ],
+  "exclude": [
+    "node_modules" // Prevents TypeScript from trying to compile node_modules
+  ]
+}
