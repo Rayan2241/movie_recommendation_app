@@ -10,6 +10,15 @@ export const ERROR_MESSAGES = {
   CONFIRM_PASSWORD_REQUIRED: "Please confirm your password",
   PASSWORD_MISMATCH: "Passwords do not match",
   GENERAL_ERROR: "Something went wrong. Please try again.",
+
+  // ✅ Newly added error messages
+  REGISTER_FAILED: "Registration failed. Please try again.",
+  LOGIN_FAILED: "Login failed. Please check your credentials.",
+  UNAUTHORIZED: "Unauthorized access. Please login again.",
+  LOGOUT_FAILED: "Logout failed. Please try again.",
+  FETCH_MOVIES: "Failed to fetch movies.",
+  FETCH_MOVIE_DETAILS: "Failed to fetch movie details.",
+  FETCH_UPCOMING_MOVIES: "Failed to fetch upcoming movies.",
 };
 
 export const UI_TEXT = {
