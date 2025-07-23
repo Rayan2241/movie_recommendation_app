@@ -3,7 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { TextField, Button, Box, Typography, CircularProgress } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+import { ERROR_MESSAGES } from "../Constants/messages";
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -28,26 +35,31 @@ const Register: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
+
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = ERROR_MESSAGES.NAME_REQUIRED;
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
+      newErrors.name = ERROR_MESSAGES.NAME_TOO_SHORT;
     }
+
     if (!formData.email) {
-      newErrors.email = "Email is required";
+      newErrors.email = ERROR_MESSAGES.EMAIL_REQUIRED;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
+      newErrors.email = ERROR_MESSAGES.EMAIL_INVALID;
     }
+
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = ERROR_MESSAGES.PASSWORD_REQUIRED;
     } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = ERROR_MESSAGES.PASSWORD_TOO_SHORT;
     }
+
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+      newErrors.confirmPassword = ERROR_MESSAGES.CONFIRM_PASSWORD_REQUIRED;
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = ERROR_MESSAGES.PASSWORD_MISMATCH;
     }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -79,12 +91,12 @@ const Register: React.FC = () => {
         if (errorMessage === "Email address already exists") {
           setErrors((prev) => ({
             ...prev,
-            email: "Email address already exists",
+            email: ERROR_MESSAGES.EMAIL_EXISTS,
           }));
         } else {
           setErrors((prev) => ({
             ...prev,
-            general: errorMessage,
+            general: errorMessage || ERROR_MESSAGES.GENERAL_ERROR,
           }));
         }
       }
@@ -100,7 +112,10 @@ const Register: React.FC = () => {
           </Typography>
           <Typography variant="body2" align="center" color="textSecondary">
             Or{" "}
-            <Link to="/login" style={{ textDecoration: "none", color: "#1976d2" }}>
+            <Link
+              to="/login"
+              style={{ textDecoration: "none", color: "#1976d2" }}
+            >
               sign in to your existing account
             </Link>
           </Typography>
@@ -108,7 +123,14 @@ const Register: React.FC = () => {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {errors.general && (
-            <Box sx={{ bgcolor: "error.main", color: "white", padding: 2, borderRadius: 1 }}>
+            <Box
+              sx={{
+                bgcolor: "error.main",
+                color: "white",
+                padding: 2,
+                borderRadius: 1,
+              }}
+            >
               <Typography variant="body2">{errors.general}</Typography>
             </Box>
           )}
