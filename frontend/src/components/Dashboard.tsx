@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { ERROR_MESSAGES } from "../Constants/messages";
+
 import {
   Box,
   Button,
@@ -36,7 +38,7 @@ const Dashboard: React.FC = () => {
         const data = await fetchPopularMovies();
         setMovies(data);
       } catch (error) {
-        setError("Failed to fetch popular movies.");
+        setError(ERROR_MESSAGES.FETCH_POPULAR_MOVIES);
       } finally {
         setLoading(false);
       }
