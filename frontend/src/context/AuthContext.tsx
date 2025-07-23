@@ -1,37 +1,27 @@
-// frontend/src/context/AuthContext.tsx
 
 "use client"
 
 import type React from "react"
 import { createContext, useContext, useReducer, useEffect } from "react"
-// Make sure these types are correctly defined in your ../types file
 import type { User } from "../types/index"
 import { authAPI } from "../services/api"
 
-
-// Define the full state interface that will be part of the context value
-// This should match the structure of 'state' in your reducer, PLUS the functions
 interface AuthStateContext {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  error: string | null; // error is part of the state, so it should be here
+  error: string | null;
 }
 
-// Define the interface for the context value that 'useAuth' will return
-// This merges the state properties with the action functions
 interface AuthContextType extends AuthStateContext { // Extend the new state context
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
-  // error is already in AuthStateContext
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-// ... rest of your AuthAction and authReducer remain the same ...
 
 type AuthAction =
   | { type: "AUTH_START" }
@@ -41,7 +31,6 @@ type AuthAction =
   | { type: "CLEAR_ERROR" }
   | { type: "SET_LOADING"; payload: boolean }
 
-// Changed initialState to directly use AuthStateContext
 const initialState: AuthStateContext = {
   user: null,
   token: typeof window !== 'undefined' ? localStorage.getItem("token") : null, // Safer access for localStorage

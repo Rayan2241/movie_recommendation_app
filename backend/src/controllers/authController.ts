@@ -8,10 +8,7 @@ import { validationResult } from "express-validator";
 import User from "../models/User";  
 
 // Importing a utility function to generate JSON Web Tokens (JWT) for user authentication
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt";  
-
-// Importing a utility function to verify the refresh token
-import { verifyRefreshToken } from "../utils/jwt";
+import { generateToken } from "../utils/jwt";  
 
 // Importing the custom AuthRequest type that extends Request with user data after authentication
 import type { AuthRequest } from "../types";  
@@ -36,7 +33,19 @@ import {
   INTERNAL_SERVER_ERROR 
 } from "../constants/http";  // Importing HTTP status codes
 
-// Register a new user in the system
+/**
+ * Registers a new user in the system.
+ * 
+ * This function performs the following actions:
+ * 1. Validates the incoming request data (name, email, password).
+ * 2. Checks if a user already exists with the provided email.
+ * 3. Creates a new user in the database if no existing user is found.
+ * 4. Generates a JWT token for the new user.
+ * 5. Sends the user data and token in the response if registration is successful.
+ * 
+ * @param {Request} req - The HTTP request object
+ * @param {Response} res - The HTTP response object
+ */
 export const register = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);  // Check for validation errors
@@ -66,16 +75,14 @@ export const register = async (req: Request, res: Response) => {
       password,
     });
 
-    // Generate access and refresh tokens for the new user
-    const accessToken = generateAccessToken(String(user._id));
-    const refreshToken = generateRefreshToken(String(user._id));
+    // Generate JWT token for the new user
+    const token = generateToken(String(user._id));
 
-    // Respond with success message, user data, and both tokens
+    // Respond with success message and user data
     res.status(CREATED).json({
       success: true,
       message: USER_REGISTERED,  // Using the constant message
-      accessToken,
-      refreshToken,
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -91,7 +98,19 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-// Log a user into the system
+/**
+ * Logs a user into the system.
+ * 
+ * This function performs the following actions:
+ * 1. Validates the incoming request data (email and password).
+ * 2. Checks if the user exists with the provided email.
+ * 3. Compares the password with the stored hash.
+ * 4. Generates a JWT token if credentials are valid.
+ * 5. Responds with the user data and token if login is successful.
+ * 
+ * @param {Request} req - The HTTP request object
+ * @param {Response} res - The HTTP response object
+ */
 export const login = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);  // Check for validation errors
@@ -123,16 +142,14 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Generate access and refresh tokens for the user
-    const accessToken = generateAccessToken(String(user._id));
-    const refreshToken = generateRefreshToken(String(user._id));
+    // Generate token for the user
+    const token = generateToken(String(user._id));
 
-    // Respond with success message, user data, and both tokens
+    // Respond with success message and user data
     res.status(OK).json({
       success: true,
       message: LOGIN_SUCCESS,  // Using the constant message
-      accessToken,
-      refreshToken,
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -148,7 +165,15 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-// Returns the authenticated user's information
+/**
+ * Returns the authenticated user's information.
+ * 
+ * This function retrieves the user details from the request (after authentication)
+ * and responds with the user's data.
+ * 
+ * @param {AuthRequest} req - The authenticated HTTP request object
+ * @param {Response} res - The HTTP response object
+ */
 export const getMe = async (req: AuthRequest, res: Response) => {
   try {
     const user = req.user;  // Access the authenticated user
@@ -170,7 +195,14 @@ export const getMe = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Log out the user
+/**
+ * Logs out the user.
+ * 
+ * This function simply sends a success message indicating the user has logged out.
+ * 
+ * @param {Request} req - The HTTP request object
+ * @param {Response} res - The HTTP response object
+ */
 export const logout = async (req: Request, res: Response) => {
   try {
     res.status(OK).json({
@@ -182,43 +214,6 @@ export const logout = async (req: Request, res: Response) => {
     res.status(INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Server error during logout",  // Default message in case of failure
-    });
-  }
-};
-
-// Refresh access token using the refresh token
-export const refreshAccessToken = async (req: Request, res: Response) => {
-  try {
-    const { refreshToken } = req.body;
-    if (!refreshToken) {
-      return res.status(BAD_REQUEST).json({
-        success: false,
-        message: "Refresh token is required",
-      });
-    }
-
-    // Verify the refresh token
-    const decoded = verifyRefreshToken(refreshToken);
-
-    if (!decoded) {
-      return res.status(UNAUTHORIZED).json({
-        success: false,
-        message: "Invalid refresh token",
-      });
-    }
-
-    // Generate a new access token
-    const accessToken = generateAccessToken(decoded.id);
-
-    res.status(OK).json({
-      success: true,
-      accessToken,
-    });
-  } catch (error: any) {
-    console.error("Refresh token error:", error);
-    res.status(INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: "Failed to refresh access token",
     });
   }
 };
