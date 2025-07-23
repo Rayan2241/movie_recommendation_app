@@ -1,37 +1,27 @@
-// frontend/src/context/AuthContext.tsx
-
 "use client"
 
 import type React from "react"
 import { createContext, useContext, useReducer, useEffect } from "react"
-// Make sure these types are correctly defined in your ../types file
 import type { User } from "../types/index"
 import { authAPI } from "../services/api"
+import { ERROR_MESSAGES } from "../Constants/messages" // ✅ Centralized error messages
 
-
-// Define the full state interface that will be part of the context value
-// This should match the structure of 'state' in your reducer, PLUS the functions
 interface AuthStateContext {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  error: string | null; // error is part of the state, so it should be here
+  error: string | null;
 }
 
-// Define the interface for the context value that 'useAuth' will return
-// This merges the state properties with the action functions
-interface AuthContextType extends AuthStateContext { // Extend the new state context
+interface AuthContextType extends AuthStateContext {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
-  // error is already in AuthStateContext
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-// ... rest of your AuthAction and authReducer remain the same ...
 
 type AuthAction =
   | { type: "AUTH_START" }
@@ -41,10 +31,9 @@ type AuthAction =
   | { type: "CLEAR_ERROR" }
   | { type: "SET_LOADING"; payload: boolean }
 
-// Changed initialState to directly use AuthStateContext
 const initialState: AuthStateContext = {
   user: null,
-  token: typeof window !== 'undefined' ? localStorage.getItem("token") : null, // Safer access for localStorage
+  token: typeof window !== 'undefined' ? localStorage.getItem("token") : null,
   isLoading: false,
   isAuthenticated: false,
   error: null,
@@ -102,10 +91,8 @@ const authReducer = (state: AuthStateContext, action: AuthAction): AuthStateCont
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
-  // Check if user is logged in on app start
   useEffect(() => {
     const checkAuth = async () => {
-      // Check if localStorage is available (for server-side rendering or build environments)
       const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null
       if (token) {
         try {
@@ -117,20 +104,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               payload: { user: response.user, token },
             })
           } else {
-            // Only remove from localStorage if it's available
             if (typeof window !== 'undefined') {
               localStorage.removeItem("token")
               localStorage.removeItem("user")
             }
           }
         } catch (error) {
-          // Only remove from localStorage if it's available
           if (typeof window !== 'undefined') {
             localStorage.removeItem("token")
             localStorage.removeItem("user")
           }
-          // Optionally dispatch an error here if you want to show it in UI
-          // dispatch({ type: "AUTH_FAILURE", payload: "Failed to re-authenticate" });
         } finally {
           dispatch({ type: "SET_LOADING", payload: false })
         }
@@ -155,10 +138,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           payload: { user: response.user, token: response.token },
         })
       } else {
-        throw new Error(response.message || "Login failed")
+        throw new Error(response.message || ERROR_MESSAGES.LOGIN_FAILED)
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "Login failed"
+      const errorMessage = error.response?.data?.message || error.message || ERROR_MESSAGES.LOGIN_FAILED
       dispatch({ type: "AUTH_FAILURE", payload: errorMessage })
       throw error
     }
@@ -179,10 +162,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           payload: { user: response.user, token: response.token },
         })
       } else {
-        throw new Error(response.message || "Registration failed")
+        throw new Error(response.message || ERROR_MESSAGES.REGISTER_FAILED)
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || "Registration failed"
+      const errorMessage = error.response?.data?.message || error.message || ERROR_MESSAGES.REGISTER_FAILED
       dispatch({ type: "AUTH_FAILURE", payload: errorMessage })
       throw error
     }
@@ -200,9 +183,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: "CLEAR_ERROR" })
   }
 
-  // The value provided to the context should include all state properties and functions
   const value: AuthContextType = {
-    ...state, // Spread all properties from AuthStateContext
+    ...state,
     login,
     register,
     logout,
