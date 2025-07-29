@@ -1,11 +1,12 @@
 // User and Authentication related interfaces
 
+// src/types/index.ts
 export interface User {
   id: string;
   name: string;
   email: string;
+  favorites?: number[]; // TMDB IDs are typically numbers
 }
-
 export interface AuthState {
   user: User | null;
   token: string | null;
@@ -23,23 +24,27 @@ export interface RegisterData {
   email: string;
   password: string;
 }
+// In your types.ts/index.ts
+export interface EnhancedMovieData extends MovieData {
+  isFavorite: boolean;
+}
 
+// In your types file
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
-  data?: T; // generic field to hold different types of data
+  data?: T;
   user?: User;
   token?: string;
+  favorites?: number[]; // Add this line
   errors?: any[];
 }
-
-// Movie related interfaces
-
 export interface MovieData {
   id: number;
   title: string;
-  poster_path: string;
+  poster_path?: string; // Optional as not all movies might have posters
   release_date: string;
+  vote_average: number;
   overview: string;
 }
 

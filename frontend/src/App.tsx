@@ -1,11 +1,19 @@
-// src/App.tsx
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
-import Home from "./components/HomePage";  // Importing the Home page
+import Home from "./components/HomePage";
+import MovieDetails from "./components/MovieDetailsModal";
+import Profile from "./components/Profile";
+import Favorites from "./components/Favorites";
+import NotFound from "./components/NotFound";
+
+// Protected Route Component
+const ProtectedRoute = () => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+};
 
 function App() {
   return (
@@ -13,23 +21,28 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/" element={<Home />} />  {/* Home Page Route */}
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />  {/* Redirect any undefined routes to Home */}
+            <Route path="/movies/:id" element={<MovieDetails open={false} onClose={function (): void {
+              throw new Error("Function not implemented.");
+            } } movieId={null} />} />
+            
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/favorites" element={<Favorites />} />
+            </Route>
+            
+            {/* Error Handling */}
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </div>
       </Router>
     </AuthProvider>
   );
 }
-
 export default App;
