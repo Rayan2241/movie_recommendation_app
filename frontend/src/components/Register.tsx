@@ -20,6 +20,7 @@ import {
   Lock,
   Person,
   PersonAdd,
+  MovieFilter,
 } from "@mui/icons-material";
 import { ERROR_MESSAGES } from "../Constants/messages";
 
@@ -127,92 +128,136 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div 
-      style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        position: 'relative',
-      }}
-    >
-      {/* Decorative Elements */}
-      <div 
-        style={{
+    <Box sx={{
+      minHeight: '100vh',
+      background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 30%, #2d1b69 60%, #11998e 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Animated Background */}
+      <Box
+        sx={{
           position: 'absolute',
-          top: '15%',
-          left: '15%',
-          width: '180px',
-          height: '180px',
-          background: 'rgba(255, 255, 255, 0.1)',
-          borderRadius: '50%',
-          filter: 'blur(40px)',
-          animation: 'float 6s ease-in-out infinite',
-        }}
-      />
-      <div 
-        style={{
-          position: 'absolute',
-          bottom: '15%',
-          right: '15%',
-          width: '220px',
-          height: '220px',
-          background: 'rgba(255, 255, 255, 0.15)',
-          borderRadius: '50%',
-          filter: 'blur(30px)',
-          animation: 'float 4s ease-in-out infinite reverse',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 20% 20%, rgba(255, 107, 107, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.1) 0%, transparent 50%)
+          `,
+          animation: 'backgroundFlow 15s ease-in-out infinite alternate'
         }}
       />
 
+      {/* Floating Particles */}
+      <Box sx={{ position: 'absolute', width: '100%', height: '100%', overflow: 'hidden' }}>
+        {[...Array(15)].map((_, i) => (
+          <Box
+            key={i}
+            sx={{
+              position: 'absolute',
+              width: '4px',
+              height: '4px',
+              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              borderRadius: '50%',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${3 + Math.random() * 4}s ease-in-out infinite ${Math.random() * 2}s`,
+              transform: `scale(${0.5 + Math.random() * 1})`
+            }}
+          />
+        ))}
+      </Box>
+
+      {/* Register Form Container */}
       <Box
         sx={{
-          maxWidth: 500,
+          maxWidth: 550,
           width: '100%',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
           backdropFilter: 'blur(20px)',
-          borderRadius: '24px',
-          padding: '40px',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
+          borderRadius: '30px',
+          padding: '50px 40px',
+          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
           position: 'relative',
           zIndex: 1,
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(255,107,107,0.05), rgba(78,205,196,0.05), rgba(102,126,234,0.05))',
+            borderRadius: '30px'
+          }
         }}
       >
         {/* Header */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{ textAlign: 'center', mb: 6, position: 'relative', zIndex: 1 }}>
           <Box
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 80,
-              height: 80,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              borderRadius: '20px',
-              mb: 3,
-              boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)',
+              width: 100,
+              height: 100,
+              background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+              borderRadius: '25px',
+              mb: 4,
+              boxShadow: '0 15px 35px rgba(255, 107, 107, 0.3)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                animation: 'shimmer 2s infinite'
+              }
             }}
           >
-            <PersonAdd sx={{ fontSize: 40, color: 'white' }} />
+            <PersonAdd sx={{ fontSize: 50, color: 'white' }} />
           </Box>
           
           <Typography 
-            variant="h3" 
+            variant="h2" 
             sx={{ 
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              fontWeight: 900,
+              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              mb: 1,
+              backgroundSize: '200% 200%',
+              animation: 'gradientShift 3s ease infinite',
+              mb: 2,
+              letterSpacing: '-1px'
             }}
           >
-            Create Account
+            Join MOVIEVERSE
           </Typography>
           
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Join us and start your journey today
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              color: 'rgba(255,255,255,0.8)', 
+              fontWeight: 300,
+              fontSize: '1.2rem'
+            }}
+          >
+            Create your account and start your cinematic adventure
           </Typography>
         </Box>
 
@@ -221,8 +266,14 @@ const Register: React.FC = () => {
           <Alert 
             severity="error" 
             sx={{ 
-              mb: 3,
-              borderRadius: '12px',
+              mb: 4,
+              borderRadius: '16px',
+              backgroundColor: 'rgba(255, 107, 107, 0.1)',
+              border: '1px solid rgba(255, 107, 107, 0.3)',
+              color: '#ff6b6b',
+              '& .MuiAlert-icon': {
+                color: '#ff6b6b'
+              },
               '& .MuiAlert-message': {
                 fontWeight: 500,
               }
@@ -237,8 +288,14 @@ const Register: React.FC = () => {
           <Alert 
             severity="error" 
             sx={{ 
-              mb: 3,
-              borderRadius: '12px',
+              mb: 4,
+              borderRadius: '16px',
+              backgroundColor: 'rgba(255, 107, 107, 0.1)',
+              border: '1px solid rgba(255, 107, 107, 0.3)',
+              color: '#ff6b6b',
+              '& .MuiAlert-icon': {
+                color: '#ff6b6b'
+              },
               '& .MuiAlert-message': {
                 fontWeight: 500,
               }
@@ -249,15 +306,25 @@ const Register: React.FC = () => {
         )}
 
         {/* Register Form */}
-        <form onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ position: 'relative', zIndex: 1 }}>
           {/* Account Information Section */}
           <Box sx={{ mb: 4 }}>
             <Typography 
-              variant="h6" 
+              variant="h5" 
               sx={{ 
-                mb: 2,
-                color: '#667eea',
-                fontWeight: 600,
+                mb: 3,
+                color: '#4ecdc4',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                '&::before': {
+                  content: '""',
+                  width: '4px',
+                  height: '24px',
+                  background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+                  borderRadius: '2px',
+                  marginRight: '12px'
+                }
               }}
             >
               Account Information
@@ -276,30 +343,44 @@ const Register: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Person sx={{ color: 'text.secondary' }} />
+                      <Person sx={{ color: 'rgba(255,255,255,0.7)' }} />
                     </InputAdornment>
                   ),
                 }}
+                InputLabelProps={{
+                  sx: { color: 'rgba(255,255,255,0.7)' }
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: '16px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '20px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    color: 'white',
+                    fontSize: '1.1rem',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)',
+                      borderWidth: '2px'
+                    },
                     '&:hover fieldset': {
-                      borderColor: '#667eea',
+                      borderColor: 'rgba(78, 205, 196, 0.5)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#667eea',
+                      borderColor: '#4ecdc4',
                       borderWidth: '2px',
+                      boxShadow: '0 0 20px rgba(78, 205, 196, 0.3)'
                     },
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#667eea',
+                    color: '#4ecdc4',
                   },
+                  '& .MuiFormHelperText-root': {
+                    color: '#ff6b6b',
+                    fontSize: '0.9rem'
+                  }
                 }}
               />
             </Box>
 
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ mb: 4 }}>
               <TextField
                 label="Email Address"
                 name="email"
@@ -313,38 +394,62 @@ const Register: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email sx={{ color: 'text.secondary' }} />
+                      <Email sx={{ color: 'rgba(255,255,255,0.7)' }} />
                     </InputAdornment>
                   ),
                 }}
+                InputLabelProps={{
+                  sx: { color: 'rgba(255,255,255,0.7)' }
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: '16px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '20px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    color: 'white',
+                    fontSize: '1.1rem',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)',
+                      borderWidth: '2px'
+                    },
                     '&:hover fieldset': {
-                      borderColor: '#667eea',
+                      borderColor: 'rgba(78, 205, 196, 0.5)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#667eea',
+                      borderColor: '#4ecdc4',
                       borderWidth: '2px',
+                      boxShadow: '0 0 20px rgba(78, 205, 196, 0.3)'
                     },
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#667eea',
+                    color: '#4ecdc4',
                   },
+                  '& .MuiFormHelperText-root': {
+                    color: '#ff6b6b',
+                    fontSize: '0.9rem'
+                  }
                 }}
               />
             </Box>
           </Box>
 
           {/* Password Section */}
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: 5 }}>
             <Typography 
-              variant="h6" 
+              variant="h5" 
               sx={{ 
-                mb: 2,
-                color: '#667eea',
-                fontWeight: 600,
+                mb: 3,
+                color: '#4ecdc4',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                '&::before': {
+                  content: '""',
+                  width: '4px',
+                  height: '24px',
+                  background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+                  borderRadius: '2px',
+                  marginRight: '12px'
+                }
               }}
             >
               Password Setup
@@ -364,7 +469,7 @@ const Register: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock sx={{ color: 'text.secondary' }} />
+                      <Lock sx={{ color: 'rgba(255,255,255,0.7)' }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -372,33 +477,52 @@ const Register: React.FC = () => {
                       <IconButton
                         onClick={togglePasswordVisibility}
                         edge="end"
-                        sx={{ color: 'text.secondary' }}
+                        sx={{ 
+                          color: 'rgba(255,255,255,0.7)',
+                          '&:hover': {
+                            color: '#4ecdc4'
+                          }
+                        }}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
+                InputLabelProps={{
+                  sx: { color: 'rgba(255,255,255,0.7)' }
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: '16px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '20px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    color: 'white',
+                    fontSize: '1.1rem',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)',
+                      borderWidth: '2px'
+                    },
                     '&:hover fieldset': {
-                      borderColor: '#667eea',
+                      borderColor: 'rgba(78, 205, 196, 0.5)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#667eea',
+                      borderColor: '#4ecdc4',
                       borderWidth: '2px',
+                      boxShadow: '0 0 20px rgba(78, 205, 196, 0.3)'
                     },
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#667eea',
+                    color: '#4ecdc4',
                   },
+                  '& .MuiFormHelperText-root': {
+                    color: '#ff6b6b',
+                    fontSize: '0.9rem'
+                  }
                 }}
               />
             </Box>
 
-            <Box sx={{ mb: 4 }}>
+            <Box sx={{ mb: 5 }}>
               <TextField
                 label="Confirm Password"
                 name="confirmPassword"
@@ -412,7 +536,7 @@ const Register: React.FC = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock sx={{ color: 'text.secondary' }} />
+                      <Lock sx={{ color: 'rgba(255,255,255,0.7)' }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -420,28 +544,47 @@ const Register: React.FC = () => {
                       <IconButton
                         onClick={toggleConfirmPasswordVisibility}
                         edge="end"
-                        sx={{ color: 'text.secondary' }}
+                        sx={{ 
+                          color: 'rgba(255,255,255,0.7)',
+                          '&:hover': {
+                            color: '#4ecdc4'
+                          }
+                        }}
                       >
                         {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
+                InputLabelProps={{
+                  sx: { color: 'rgba(255,255,255,0.7)' }
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: '16px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '20px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    color: 'white',
+                    fontSize: '1.1rem',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)',
+                      borderWidth: '2px'
+                    },
                     '&:hover fieldset': {
-                      borderColor: '#667eea',
+                      borderColor: 'rgba(78, 205, 196, 0.5)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#667eea',
+                      borderColor: '#4ecdc4',
                       borderWidth: '2px',
+                      boxShadow: '0 0 20px rgba(78, 205, 196, 0.3)'
                     },
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#667eea',
+                    color: '#4ecdc4',
                   },
+                  '& .MuiFormHelperText-root': {
+                    color: '#ff6b6b',
+                    fontSize: '0.9rem'
+                  }
                 }}
               />
             </Box>
@@ -454,46 +597,75 @@ const Register: React.FC = () => {
             size="large"
             disabled={isLoading}
             sx={{
-              height: 56,
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              fontSize: '1.1rem',
-              fontWeight: 600,
+              height: 70,
+              borderRadius: '20px',
+              background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+              fontSize: '1.3rem',
+              fontWeight: 700,
               textTransform: 'none',
-              boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
-              mb: 3,
+              boxShadow: '0 15px 35px rgba(255, 107, 107, 0.4)',
+              mb: 4,
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                transition: 'left 0.5s ease'
+              },
               '&:hover': {
-                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
-                transform: 'translateY(-2px)',
+                background: 'linear-gradient(45deg, #ee5a52, #44a08d)',
+                boxShadow: '0 20px 45px rgba(255, 107, 107, 0.5)',
+                transform: 'translateY(-3px) scale(1.02)',
+                '&::before': {
+                  left: '100%'
+                }
               },
               '&:disabled': {
-                background: 'linear-gradient(135deg, #a0aec0 0%, #718096 100%)',
+                background: 'linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
+                color: 'rgba(255,255,255,0.5)'
               },
-              transition: 'all 0.3s ease',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
             {isLoading ? (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <CircularProgress size={24} color="inherit" sx={{ mr: 2 }} />
+                <CircularProgress size={28} color="inherit" sx={{ mr: 2 }} />
                 Creating Account...
               </Box>
             ) : (
-              "Create Account"
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <PersonAdd sx={{ mr: 2, fontSize: 28 }} />
+                Create Account
+              </Box>
             )}
           </Button>
-        </form>
+        </Box>
 
         {/* Footer */}
-        <Box sx={{ textAlign: 'center', pt: 2, borderTop: '1px solid rgba(0, 0, 0, 0.1)' }}>
-          <Typography variant="body2" color="text.secondary">
+        <Box sx={{ 
+          textAlign: 'center', 
+          pt: 4, 
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem' }}>
             Already have an account?{" "}
             <Link
               to="/login"
               style={{
-                color: '#667eea',
+                color: '#4ecdc4',
                 textDecoration: 'none',
-                fontWeight: 600,
+                fontWeight: 700,
+                background: 'linear-gradient(45deg, #4ecdc4, #45b7d1)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                transition: 'all 0.3s ease'
               }}
             >
               Sign In
@@ -504,13 +676,45 @@ const Register: React.FC = () => {
 
       <style>
         {`
+          @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+
+          @keyframes backgroundFlow {
+            0% { 
+              transform: translateX(0) translateY(0) scale(1);
+              opacity: 0.8;
+            }
+            50% { 
+              transform: translateX(-20px) translateY(-10px) scale(1.1);
+              opacity: 1;
+            }
+            100% { 
+              transform: translateX(10px) translateY(5px) scale(0.95);
+              opacity: 0.8;
+            }
+          }
+
           @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            0%, 100% { 
+              transform: translateY(0px) translateX(0px);
+              opacity: 0.3;
+            }
+            50% { 
+              transform: translateY(-20px) translateX(10px);
+              opacity: 1;
+            }
+          }
+
+          @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
           }
         `}
       </style>
-    </div>
+    </Box>
   );
 };
 

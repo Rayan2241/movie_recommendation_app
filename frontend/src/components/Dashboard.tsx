@@ -7,16 +7,23 @@ import {
   CircularProgress, 
   Divider, 
   IconButton,
-  Container
+  Container,
+  Avatar,
+  Card,
+  CardContent,
+  InputBase
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { tmdbAPI } from '../services/api';
 import MovieCard from './MovieCard';
 import MovieDetailsModal from './MovieDetailsModal';
-import MovieSearch from './MovieSearch';
 import { useNavigate } from 'react-router-dom';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import LogoutIcon from '@mui/icons-material/Logout';
+import MovieIcon from '@mui/icons-material/Movie';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import SearchIcon from '@mui/icons-material/Search';
 import type { EnhancedMovieData } from "../types";
 import type { MovieData } from "../types";
 
@@ -38,6 +45,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState('');
   const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const loadMovies = async () => {
@@ -61,7 +69,6 @@ const Dashboard: React.FC = () => {
 
     loadMovies();
   }, [favoritesLoaded, favorites]);
-
 
   const handleLogout = () => {
     logout();
@@ -100,38 +107,288 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      console.log('Searching for:', searchQuery);
+      // Add your search logic here
+    }
+  };
+
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Sidebar */}
+    <Box sx={{
+      minHeight: '100vh',
+      background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 30%, #2d1b69 60%, #11998e 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Animated Background */}
       <Box
         sx={{
-          width: 240,
-          bgcolor: 'primary.main',
-          color: 'white',
-          p: 2,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at 20% 20%, rgba(255, 107, 107, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.1) 0%, transparent 50%)
+          `,
+          animation: 'backgroundFlow 15s ease-in-out infinite alternate'
+        }}
+      />
+
+      {/* Floating Particles */}
+      <Box sx={{ position: 'absolute', width: '100%', height: '100%', overflow: 'hidden' }}>
+        {[...Array(20)].map((_, i) => (
+          <Box
+            key={i}
+            sx={{
+              position: 'absolute',
+              width: '4px',
+              height: '4px',
+              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              borderRadius: '50%',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${3 + Math.random() * 4}s ease-in-out infinite ${Math.random() * 2}s`,
+              transform: `scale(${0.5 + Math.random() * 1})`
+            }}
+          />
+        ))}
+      </Box>
+
+      {/* Glassmorphism Sidebar */}
+      <Box
+        sx={{
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          width: 280,
+          height: '100vh',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderLeft: 'none',
+          borderTop: 'none',
+          borderBottom: 'none',
+          p: 3,
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          zIndex: 10,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(255,107,107,0.05), rgba(78,205,196,0.05), rgba(102,126,234,0.05))',
+          }
         }}
       >
-        <Typography variant="h6" sx={{ mb: 4, textAlign: 'center' }}>
-          Movie App
-        </Typography>
-        
-        <Button
-          startIcon={<FavoriteIcon />}
-          onClick={handleFavoritesClick}
-          sx={{ color: 'white', mb: 2, justifyContent: 'flex-start' }}
+        {/* Logo Section */}
+        <Box sx={{ textAlign: 'center', mb: 6, position: 'relative', zIndex: 1 }}>
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 80,
+              height: 80,
+              background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+              borderRadius: '20px',
+              mb: 3,
+              boxShadow: '0 15px 35px rgba(255, 107, 107, 0.3)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                animation: 'shimmer 2s infinite'
+              }
+            }}
+          >
+            <MovieIcon sx={{ fontSize: 35, color: 'white' }} />
+          </Box>
+          
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 900,
+              background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundSize: '200% 200%',
+              animation: 'gradientShift 3s ease infinite',
+              letterSpacing: '-1px'
+            }}
+          >
+            MOVIEVERSE
+          </Typography>
+        </Box>
+
+        {/* User Profile Section */}
+        <Box
+          sx={{
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '20px',
+            p: 3,
+            mb: 4,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            position: 'relative',
+            zIndex: 1
+          }}
         >
-          My Favorites
-        </Button>
-        
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Avatar
+              sx={{
+                width: 50,
+                height: 50,
+                background: 'linear-gradient(45deg, #4ecdc4, #45b7d1)',
+                mr: 2,
+                fontSize: '1.2rem',
+                fontWeight: 700
+              }}
+            >
+              {user?.name?.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: 'white', 
+                  fontWeight: 600,
+                  fontSize: '1.1rem'
+                }}
+              >
+                {user?.name}
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Movie Enthusiast
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+              Favorites
+            </Typography>
+            <Box
+              sx={{
+                backgroundColor: 'rgba(78, 205, 196, 0.2)',
+                borderRadius: '12px',
+                px: 2,
+                py: 0.5,
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              <FavoriteIcon sx={{ fontSize: 16, color: '#4ecdc4', mr: 1 }} />
+              <Typography 
+                variant="body2" 
+                sx={{ color: '#4ecdc4', fontWeight: 600 }}
+              >
+                {user?.favorites?.length || 0}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Navigation Buttons */}
+        <Box sx={{ position: 'relative', zIndex: 1, flex: 1 }}>
+          <Button
+            startIcon={<DashboardIcon />}
+            fullWidth
+            sx={{
+              color: 'white',
+              mb: 2,
+              justifyContent: 'flex-start',
+              py: 1.5,
+              px: 3,
+              borderRadius: '16px',
+              fontSize: '1rem',
+              fontWeight: 600,
+              backgroundColor: 'rgba(78, 205, 196, 0.1)',
+              border: '1px solid rgba(78, 205, 196, 0.3)',
+              '&:hover': {
+                backgroundColor: 'rgba(78, 205, 196, 0.2)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 25px rgba(78, 205, 196, 0.3)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Dashboard
+          </Button>
+          
+          <Button
+            startIcon={<FavoriteIcon />}
+            onClick={handleFavoritesClick}
+            fullWidth
+            sx={{
+              color: 'rgba(255,255,255,0.8)',
+              mb: 2,
+              justifyContent: 'flex-start',
+              py: 1.5,
+              px: 3,
+              borderRadius: '16px',
+              fontSize: '1rem',
+              fontWeight: 600,
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                color: '#ff6b6b',
+                border: '1px solid rgba(255, 107, 107, 0.3)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 25px rgba(255, 107, 107, 0.2)'
+              },
+              transition: 'all 0.3s ease'
+            }}
+          >
+            My Favorites
+          </Button>
+        </Box>
+
+        {/* Logout Button */}
         <Button
           startIcon={<LogoutIcon />}
           onClick={handleLogout}
-          sx={{ 
-            color: 'white', 
-            mt: 'auto', 
-            justifyContent: 'flex-start'
+          fullWidth
+          sx={{
+            color: 'rgba(255,255,255,0.8)',
+            justifyContent: 'flex-start',
+            py: 1.5,
+            px: 3,
+            borderRadius: '16px',
+            fontSize: '1rem',
+            fontWeight: 600,
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            position: 'relative',
+            zIndex: 1,
+            '&:hover': {
+              backgroundColor: 'rgba(255, 107, 107, 0.1)',
+              color: '#ff6b6b',
+              border: '1px solid rgba(255, 107, 107, 0.3)',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 8px 25px rgba(255, 107, 107, 0.2)'
+            },
+            transition: 'all 0.3s ease'
           }}
         >
           Logout
@@ -139,63 +396,344 @@ const Dashboard: React.FC = () => {
       </Box>
 
       {/* Main Content */}
-      <Box sx={{ flex: 1, p: 4 }}>
+      <Box sx={{ 
+        ml: '280px', 
+        p: 4, 
+        position: 'relative', 
+        zIndex: 1,
+        minHeight: '100vh'
+      }}>
         <Container maxWidth="xl">
-          {/* Header */}
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            mb: 4
-          }}>
-            <Typography variant="h4" component="h1">
-              Welcome back, {user?.name}!
-            </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton 
-                onClick={handleFavoritesClick} 
-                color="inherit"
-                sx={{ mr: 1 }}
-              >
-                <FavoriteIcon />
-                <Typography variant="body1" sx={{ ml: 1 }}>
-                  {user?.favorites?.length || 0}
+          {/* Header Section */}
+          <Box
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '25px',
+              p: 4,
+              mb: 4,
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(135deg, rgba(255,107,107,0.05), rgba(78,205,196,0.05), rgba(102,126,234,0.05))',
+                borderRadius: '25px'
+              }
+            }}
+          >
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              position: 'relative',
+              zIndex: 1
+            }}>
+              <Box>
+                <Typography 
+                  variant="h2" 
+                  sx={{ 
+                    fontWeight: 900,
+                    fontSize: { xs: '2rem', md: '3rem' },
+                    background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundSize: '200% 200%',
+                    animation: 'gradientShift 3s ease infinite',
+                    letterSpacing: '-1px',
+                    mb: 1
+                  }}
+                >
+                  Welcome back!
                 </Typography>
-              </IconButton>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    color: 'rgba(255,255,255,0.8)', 
+                    fontWeight: 300,
+                    fontSize: '1.3rem'
+                  }}
+                >
+                  Ready to discover amazing movies, {user?.name}?
+                </Typography>
+              </Box>
+              
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                  borderRadius: '20px',
+                  px: 3,
+                  py: 2,
+                  border: '1px solid rgba(78, 205, 196, 0.3)'
+                }}
+              >
+                <TrendingUpIcon sx={{ color: '#4ecdc4', mr: 2, fontSize: 28 }} />
+                <Box>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                    Your Favorites
+                  </Typography>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      color: '#4ecdc4', 
+                      fontWeight: 700,
+                      fontSize: '1.8rem'
+                    }}
+                  >
+                    {user?.favorites?.length || 0}
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
           </Box>
 
-          {/* Search Bar */}
-          <MovieSearch />
+          {/* Search Section - Updated */}
+          <Box
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '25px',
+              p: 3,
+              mb: 4,
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.2)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(135deg, rgba(255,107,107,0.03), rgba(78,205,196,0.03), rgba(102,126,234,0.03))',
+                borderRadius: '25px'
+              }
+            }}
+          >
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              {/* Header with Icon and Title */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                mb: 3,
+                justifyContent: 'center'
+              }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 32,
+                    height: 32,
+                    backgroundColor: 'rgba(78, 205, 196, 0.2)',
+                    borderRadius: '8px',
+                    mr: 2,
+                    border: '1px solid rgba(78, 205, 196, 0.3)'
+                  }}
+                >
+                  <MovieIcon sx={{ color: '#4ecdc4', fontSize: 20 }} />
+                </Box>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontWeight: 600,
+                    fontSize: '1.3rem'
+                  }}
+                >
+                  Discover Movies
+                </Typography>
+              </Box>
 
-          <Divider sx={{ my: 4 }} />
+              {/* Search Input */}
+              <Box 
+                component="form"
+                onSubmit={handleSearch}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  borderRadius: '20px',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    border: '1px solid rgba(78, 205, 196, 0.3)',
+                    boxShadow: '0 8px 25px rgba(78, 205, 196, 0.15)'
+                  },
+                  '&:focus-within': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    border: '1px solid rgba(78, 205, 196, 0.5)',
+                    boxShadow: '0 8px 25px rgba(78, 205, 196, 0.25)'
+                  }
+                }}
+              >
+                {/* Search Icon */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pl: 3,
+                    pr: 2
+                  }}
+                >
+                  <SearchIcon sx={{ 
+                    color: 'rgba(255, 255, 255, 0.6)', 
+                    fontSize: 22 
+                  }} />
+                </Box>
+
+                {/* Input Field */}
+                <InputBase
+                  placeholder="Search for your favorite movies..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  sx={{
+                    flex: 1,
+                    color: 'white',
+                    fontSize: '1rem',
+                    fontWeight: 400,
+                    py: 2,
+                    pr: 3,
+                    '& .MuiInputBase-input': {
+                      padding: 0,
+                      '&::placeholder': {
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        opacity: 1,
+                        fontSize: '1rem',
+                        fontWeight: 400
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
+          </Box>
 
           {/* Movies Section */}
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            Popular Movies
-          </Typography>
+          <Box
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '25px',
+              p: 4,
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.2)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(135deg, rgba(255,107,107,0.03), rgba(78,205,196,0.03), rgba(102,126,234,0.03))',
+                borderRadius: '25px'
+              }
+            }}
+          >
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography 
+                variant="h3" 
+                sx={{ 
+                  mb: 4,
+                  fontWeight: 700,
+                  background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: '2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  '&::before': {
+                    content: '""',
+                    width: '6px',
+                    height: '32px',
+                    background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+                    borderRadius: '3px',
+                    marginRight: '16px'
+                  }
+                }}
+              >
+                Popular Movies
+              </Typography>
 
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <CircularProgress size={60} />
-            </Box>
-          ) : error ? (
-            <Typography color="error">{error}</Typography>
-          ) : (
-            <Grid container spacing={4}>
-              {movies.map((movie) => (
-                <Grid item key={movie.id} xs={12} sm={6} md={4} lg={3}>
-                  <MovieCard
-                    movie={movie}
-                    onClick={handleMovieClick}
-                    isFavorite={movie.isFavorite}
-                    onFavoriteClick={handleFavoriteClick}
-                  />
+              {loading ? (
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  minHeight: '300px'
+                }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <CircularProgress 
+                      size={80} 
+                      sx={{ 
+                        color: '#4ecdc4',
+                        mb: 3,
+                        '& .MuiCircularProgress-circle': {
+                          strokeLinecap: 'round',
+                        }
+                      }} 
+                    />
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        color: 'rgba(255,255,255,0.8)',
+                        fontWeight: 500
+                      }}
+                    >
+                      Loading amazing movies...
+                    </Typography>
+                  </Box>
+                </Box>
+              ) : error ? (
+                <Box
+                  sx={{
+                    textAlign: 'center',
+                    py: 6,
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(255, 107, 107, 0.3)'
+                  }}
+                >
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      color: '#ff6b6b',
+                      fontWeight: 600
+                    }}
+                  >
+                    {error}
+                  </Typography>
+                </Box>
+              ) : (
+                <Grid container spacing={4}>
+                  {movies.map((movie) => (
+                    <Grid item key={movie.id} xs={12} sm={6} md={4} lg={3}>
+                      <MovieCard
+                        movie={movie}
+                        onClick={handleMovieClick}
+                        isFavorite={movie.isFavorite}
+                        onFavoriteClick={handleFavoriteClick}
+                      />
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
-            </Grid>
-          )}
+              )}
+            </Box>
+          </Box>
 
           {/* Movie Details Modal */}
           <MovieDetailsModal
@@ -205,6 +743,47 @@ const Dashboard: React.FC = () => {
           />
         </Container>
       </Box>
+
+      <style>
+        {`
+          @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+
+          @keyframes backgroundFlow {
+            0% { 
+              transform: translateX(0) translateY(0) scale(1);
+              opacity: 0.8;
+            }
+            50% { 
+              transform: translateX(-20px) translateY(-10px) scale(1.1);
+              opacity: 1;
+            }
+            100% { 
+              transform: translateX(10px) translateY(5px) scale(0.95);
+              opacity: 0.8;
+            }
+          }
+
+          @keyframes float {
+            0%, 100% { 
+              transform: translateY(0px) translateX(0px);
+              opacity: 0.3;
+            }
+            50% { 
+              transform: translateY(-20px) translateX(10px);
+              opacity: 1;
+            }
+          }
+
+          @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+          }
+        `}
+      </style>
     </Box>
   );
 };
