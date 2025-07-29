@@ -3,11 +3,27 @@ import jwt from "jsonwebtoken";
 import User from "../models/User";
 import type { AuthRequest } from "../types";
 import winston from "winston";
-import { UNAUTHORIZED, INTERNAL_SERVER_ERROR } from "../constants/http";
+import { 
+  UNAUTHORIZED, 
+  INTERNAL_SERVER_ERROR, 
+  OK, 
+  BAD_REQUEST 
+} from "../constants/http";
+import {
+  USER_NOT_FOUND,
+  FAVORITE_ADDED,
+  FAVORITE_REMOVED,
+  FAVORITES_FETCHED,
+  NO_TOKEN_PROVIDED,
+  INVALID_TOKEN,
+  AUTHENTICATION_ERROR,
+  MOVIE_ID_REQUIRED,
+  MOVIE_ALREADY_FAVORITE
+} from "../constants/messages";
 
-// Set up the logger (Winston)
+// Winston logger setup remains the same
 const logger = winston.createLogger({
-  level: "info", // Log level (info, warn, error)
+  level: "info",
   format: winston.format.combine(
     winston.format.colorize(),
     winston.format.timestamp(),
@@ -16,7 +32,7 @@ const logger = winston.createLogger({
     })
   ),
   transports: [
-    new winston.transports.Console(), // Log to console
+    new winston.transports.Console(),
   ],
 });
 
@@ -30,11 +46,10 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
 
     if (!token) {
       logger.warn("No token provided in authorization header.");
-      res.status(UNAUTHORIZED).json({
+      return res.status(UNAUTHORIZED).json({
         success: false,
-        message: "Not authorized to access this route (No token provided)",
+        message: NO_TOKEN_PROVIDED,
       });
-      return;
     }
 
     try {
@@ -43,29 +58,127 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
 
       if (!user) {
         logger.warn("No user found for the provided token.");
-        res.status(UNAUTHORIZED).json({
+        return res.status(UNAUTHORIZED).json({
           success: false,
-          message: "No user found with this token",
+          message: USER_NOT_FOUND, // Reused existing constant
         });
-        return;
       }
 
       req.user = user as any;
       next();
     } catch (error) {
       logger.error("Token verification or user lookup failed: " + (error as Error).message);
-      res.status(UNAUTHORIZED).json({
+      return res.status(UNAUTHORIZED).json({
         success: false,
-        message: "Not authorized to access this route (Invalid token)",
+        message: INVALID_TOKEN,
       });
-      return;
     }
   } catch (error) {
     logger.error("Protect middleware error: " + (error as Error).message);
+    return res.status(INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: AUTHENTICATION_ERROR,
+    });
+  }
+};
+
+export const addFavorite = async (req: AuthRequest, res: Response) => {
+  try {
+    const { movieId } = req.body;
+    if (!movieId) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        message: MOVIE_ID_REQUIRED,
+      });
+    }
+
+    const user = req.user;
+    if (!user) {
+      return res.status(UNAUTHORIZED).json({
+        success: false,
+        message: USER_NOT_FOUND, // Reused existing constant
+      });
+    }
+
+    if (user.favorites.includes(movieId)) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        message: MOVIE_ALREADY_FAVORITE,
+      });
+    }
+
+    user.favorites.push(movieId);
+    await user.save();
+
+    res.status(OK).json({
+      success: true,
+      message: FAVORITE_ADDED, // Reused existing constant
+      favorites: user.favorites,
+    });
+  } catch (error: any) {
+    logger.error("Error adding favorite: " + error.message);
     res.status(INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "Server Error during authentication process",
+      message: AUTHENTICATION_ERROR, // Reused for general errors
     });
-    return;
+  }
+};
+
+export const removeFavorite = async (req: AuthRequest, res: Response) => {
+  try {
+    const { movieId } = req.body;
+    if (!movieId) {
+      return res.status(BAD_REQUEST).json({
+        success: false,
+        message: MOVIE_ID_REQUIRED,
+      });
+    }
+
+    const user = req.user;
+    if (!user) {
+      return res.status(UNAUTHORIZED).json({
+        success: false,
+        message: USER_NOT_FOUND, // Reused existing constant
+      });
+    }
+
+    user.favorites = user.favorites.filter((id) => id !== movieId);
+    await user.save();
+
+    res.status(OK).json({
+      success: true,
+      message: FAVORITE_REMOVED, // Reused existing constant
+      favorites: user.favorites,
+    });
+  } catch (error: any) {
+    logger.error("Error removing favorite: " + error.message);
+    res.status(INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: AUTHENTICATION_ERROR, // Reused for general errors
+    });
+  }
+};
+
+export const getFavorites = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(UNAUTHORIZED).json({
+        success: false,
+        message: USER_NOT_FOUND, // Reused existing constant
+      });
+    }
+
+    res.status(OK).json({
+      success: true,
+      message: FAVORITES_FETCHED, // Reused existing constant
+      favorites: user.favorites,
+    });
+  } catch (error: any) {
+    logger.error("Error fetching favorites: " + error.message);
+    res.status(INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: AUTHENTICATION_ERROR, // Reused for general errors
+    });
   }
 };

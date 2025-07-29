@@ -1,63 +1,76 @@
 import axios from "axios";
-import type { LoginData, RegisterData, ApiResponse } from "../types";
-import { ERROR_MESSAGES } from "../Constants/messages"; // ✅ Corrected path and casing
+import type { LoginData, RegisterData, ApiResponse, MovieData } from "../types";
+import { ERROR_MESSAGES } from "../Constants/messages";
 
-// TMDb API configuration
+// API configurations
 const TMDB_API_KEY = "a6b8f51e1a0eacdb2ac7688b2bbe65a5";
 const TMDB_API_URL = "https://api.themoviedb.org/3";
-
-// Backend API configuration
 const API_BASE_URL = "http://localhost:5000/api";
 
 // Axios instances
 const tmdbApi = axios.create({
   baseURL: TMDB_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
 });
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
+  headers: { 
     "Content-Type": "application/json",
+    "Accept": "application/json"
   },
+  withCredentials: true
 });
 
-// Add token to headers if available
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Request interceptor for auth token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
-// Handle unauthorized responses
+// Enhanced response interceptor
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
+    if (error.response) {
+      // Handle specific status codes
+      switch (error.response.status) {
+        case 401:
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+          break;
+        case 404:
+          error.message = "Endpoint not found - check API routes";
+          break;
+        case 500:
+          error.message = "Server error - please try again later";
+          break;
+      }
+      
+      // Attach server response message if available
+      if (error.response.data?.message) {
+        error.message = error.response.data.message;
+      }
     }
     return Promise.reject(error);
   }
 );
 
-// Authentication API
+// Enhanced Authentication API (Internal Api calls for user authentication)
 export const authAPI = {
   register: async (userData: RegisterData): Promise<ApiResponse> => {
     try {
       const response = await api.post("/auth/register", userData);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Register error:", error);
-      throw new Error(ERROR_MESSAGES.REGISTER_FAILED);
+      throw new Error(error.message || ERROR_MESSAGES.REGISTER_FAILED);
     }
   },
 
@@ -65,9 +78,9 @@ export const authAPI = {
     try {
       const response = await api.post("/auth/login", userData);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      throw new Error(ERROR_MESSAGES.LOGIN_FAILED);
+      throw new Error(error.message || ERROR_MESSAGES.LOGIN_FAILED);
     }
   },
 
@@ -75,9 +88,9 @@ export const authAPI = {
     try {
       const response = await api.get("/auth/me");
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("GetMe error:", error);
-      throw new Error(ERROR_MESSAGES.UNAUTHORIZED);
+      throw new Error(error.message || ERROR_MESSAGES.UNAUTHORIZED);
     }
   },
 
@@ -85,60 +98,92 @@ export const authAPI = {
     try {
       const response = await api.post("/auth/logout");
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Logout error:", error);
-      throw new Error(ERROR_MESSAGES.LOGOUT_FAILED);
+      throw new Error(error.message || ERROR_MESSAGES.LOGOUT_FAILED);
+    }
+  }
+};
+
+// Enhanced Favorites API (Internal Api calls for user favorites)
+export const favoritesAPI = {
+  getFavorites: async (): Promise<ApiResponse> => {
+    try {
+      const response = await api.get("/favorites");
+      return response.data;
+    } catch (error: any) {
+      console.error("Get Favorites error:", error);
+      throw new Error(error.message || ERROR_MESSAGES.FETCH_FAVORITES_FAILED);
     }
   },
-};
 
-// TMDb API calls
+  addFavorite: async (movieId: number): Promise<ApiResponse> => {
+    try {
+      const response = await api.post("/favorites", { movieId });
+      return response.data;
+    } catch (error: any) {
+      console.error("Add Favorite error:", error);
+      throw new Error(error.message || ERROR_MESSAGES.FAVORITE_ADD_FAILED);
+    }
+  },
+  
+    removeFavorite: async (movieId: number): Promise<ApiResponse> => {
+      try {
+        const response = await api.delete(`/favorites/${movieId}`); //Note the URL format( (movie ID is passed in the URL))
+        return response.data;
+      } catch (error) {
+        console.error("Remove Favorite error:", error);
+        throw new Error(ERROR_MESSAGES.FAVORITE_REMOVE_FAILED);
+      }
+    },
 
-export const fetchMovies = async (query: string, page: number = 1) => {
-  try {
-    const response = await tmdbApi.get("/search/movie", {
-      params: { api_key: TMDB_API_KEY, query, page },
-    });
-    return response.data.results;
-  } catch (error) {
-    console.error("Error fetching movies:", error);
-    throw new Error(ERROR_MESSAGES.FETCH_MOVIES);
+  checkFavorite: async (movieId: number): Promise<ApiResponse> => {
+    try {
+      const response = await api.get(`/favorites/check/${movieId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Check Favorite error:", error);
+      throw new Error(error.message || ERROR_MESSAGES.CHECK_FAVORITE_FAILED);
+    }
   }
 };
 
-export const fetchMovieDetails = async (movieId: number) => {
-  try {
-    const response = await tmdbApi.get(`/movie/${movieId}`, {
-      params: { api_key: TMDB_API_KEY },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching movie details:", error);
-    throw new Error(ERROR_MESSAGES.FETCH_MOVIE_DETAILS);
-  }
-};
+//External API calls(fetchMovies, fetchMovieDetails, fetchPopularMovies)
+export const tmdbAPI = {
+  fetchMovies: async (query: string, page: number = 1) => {
+    try {
+      const response = await tmdbApi.get("/search/movie", {
+        params: { api_key: TMDB_API_KEY, query, page },
+      });
+      return response.data.results;
+    } catch (error) {
+      console.error("Error fetching movies:", error);
+      throw new Error(ERROR_MESSAGES.FETCH_MOVIES);
+    }
+  },
 
-export const fetchPopularMovies = async (page: number = 1) => {
-  try {
-    const response = await tmdbApi.get("/movie/popular", {
-      params: { api_key: TMDB_API_KEY, page },
-    });
-    return response.data.results;
-  } catch (error) {
-    console.error("Error fetching popular movies:", error);
-    throw new Error(ERROR_MESSAGES.FETCH_POPULAR_MOVIES);
-  }
-};
+  fetchMovieDetails: async (movieId: number) => {
+    try {
+      const response = await tmdbApi.get(`/movie/${movieId}`, {
+        params: { api_key: TMDB_API_KEY },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching movie details:", error);
+      throw new Error(ERROR_MESSAGES.FETCH_MOVIE_DETAILS);
+    }
+  },
 
-export const fetchUpcomingMovies = async (page: number = 1) => {
-  try {
-    const response = await tmdbApi.get("/movie/upcoming", {
-      params: { api_key: TMDB_API_KEY, page },
-    });
-    return response.data.results;
-  } catch (error) {
-    console.error("Error fetching upcoming movies:", error);
-    throw new Error(ERROR_MESSAGES.FETCH_UPCOMING_MOVIES);
+  fetchPopularMovies: async (page: number = 1) => {
+    try {
+      const response = await tmdbApi.get("/movie/popular", {
+        params: { api_key: TMDB_API_KEY, page },
+      });
+      return response.data.results;
+    } catch (error) {
+      console.error("Error fetching popular movies:", error);
+      throw new Error(ERROR_MESSAGES.FETCH_POPULAR_MOVIES);
+    }
   }
 };
 
