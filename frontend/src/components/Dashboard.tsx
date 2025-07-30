@@ -11,7 +11,9 @@ import {
   Avatar,
   Card,
   CardContent,
-  InputBase
+  InputBase,
+  Pagination,
+  Stack
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { tmdbAPI } from '../services/api';
@@ -24,7 +26,9 @@ import MovieIcon from '@mui/icons-material/Movie';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SearchIcon from '@mui/icons-material/Search';
-import type { EnhancedMovieData } from "../types";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import type { EnhancedMovieData, PaginatedMovieResponse } from "../types";
 import type { MovieData } from "../types";
 
 const Dashboard: React.FC = () => {
@@ -46,29 +50,43 @@ const Dashboard: React.FC = () => {
   const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
 
   useEffect(() => {
     const loadMovies = async () => {
       if (!favoritesLoaded) return;
       
       try {
-        setLoading(true);
-        const data = await tmdbAPI.fetchPopularMovies();
-        const moviesWithFavorites = data.map((movie: MovieData): EnhancedMovieData => ({
+        setLoading(currentPage === 1);
+        setIsLoadingPage(currentPage > 1);
+        
+        const data: PaginatedMovieResponse = await tmdbAPI.fetchPopularMovies(currentPage);
+        
+        const moviesWithFavorites = data.results.map((movie: MovieData): EnhancedMovieData => ({
           ...movie as MovieData,
           isFavorite: isFavorite(movie.id)
         }));
+        
         setMovies(moviesWithFavorites);
+        setTotalPages(data.total_pages);
+        setTotalResults(data.total_results);
+        setCurrentPage(data.page);
       } catch (err) {
         setError('Failed to load movies. Please try again later.');
         console.error('Error fetching movies:', err);
       } finally {
         setLoading(false);
+        setIsLoadingPage(false);
       }
     };
 
     loadMovies();
-  }, [favoritesLoaded, favorites]);
+  }, [favoritesLoaded, favorites, currentPage]);
 
   const handleLogout = () => {
     logout();
@@ -112,6 +130,26 @@ const Dashboard: React.FC = () => {
     if (searchQuery.trim()) {
       console.log('Searching for:', searchQuery);
       // Add your search logic here
+    }
+  };
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -495,7 +533,7 @@ const Dashboard: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Search Section - Updated */}
+          {/* Search Section */}
           <Box
             sx={{
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -520,7 +558,6 @@ const Dashboard: React.FC = () => {
             }}
           >
             <Box sx={{ position: 'relative', zIndex: 1 }}>
-              {/* Header with Icon and Title */}
               <Box sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -578,7 +615,6 @@ const Dashboard: React.FC = () => {
                   }
                 }}
               >
-                {/* Search Icon */}
                 <Box
                   sx={{
                     display: 'flex',
@@ -594,7 +630,6 @@ const Dashboard: React.FC = () => {
                   }} />
                 </Box>
 
-                {/* Input Field */}
                 <InputBase
                   placeholder="Search for your favorite movies..."
                   value={searchQuery}
@@ -645,29 +680,153 @@ const Dashboard: React.FC = () => {
             }}
           >
             <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Typography 
-                variant="h3" 
-                sx={{ 
-                  mb: 4,
-                  fontWeight: 700,
-                  background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontSize: '2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  '&::before': {
-                    content: '""',
-                    width: '6px',
-                    height: '32px',
+              {/* Header with pagination info */}
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                mb: 4
+              }}>
+                <Typography 
+                  variant="h3" 
+                  sx={{ 
+                    fontWeight: 700,
                     background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
-                    borderRadius: '3px',
-                    marginRight: '16px'
-                  }
-                }}
-              >
-                Popular Movies
-              </Typography>
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontSize: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    '&::before': {
+                      content: '""',
+                      width: '6px',
+                      height: '32px',
+                      background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+                      borderRadius: '3px',
+                      marginRight: '16px'
+                    }
+                  }}
+                >
+                  Popular Movies
+                </Typography>
+
+                {/* Pagination Info */}
+                <Box
+                  sx={{
+                    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                    borderRadius: '16px',
+                    px: 3,
+                    py: 1.5,
+                    border: '1px solid rgba(78, 205, 196, 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2
+                  }}
+                >
+                  <Typography 
+                    variant="body2" 
+                    sx={{ color: 'rgba(255,255,255,0.8)' }}
+                  >
+                    Page {currentPage} of {totalPages}
+                  </Typography>
+                  <Divider 
+                    orientation="vertical" 
+                    flexItem 
+                    sx={{ borderColor: 'rgba(78, 205, 196, 0.3)' }} 
+                  />
+                  <Typography 
+                    variant="body2" 
+                    sx={{ color: '#4ecdc4', fontWeight: 600 }}
+                  >
+                    {totalResults.toLocaleString()} movies
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Quick Navigation Buttons */}
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                mb: 4
+              }}>
+                <Button
+                  startIcon={<ArrowBackIcon />}
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1 || isLoadingPage}
+                  sx={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: '16px',
+                    px: 3,
+                    py: 1.5,
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    fontWeight: 600,
+                    '&:hover': {
+                      backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                      border: '1px solid rgba(78, 205, 196, 0.3)',
+                      color: '#4ecdc4'
+                    },
+                    '&:disabled': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                      color: 'rgba(255, 255, 255, 0.3)',
+                      border: '1px solid rgba(255, 255, 255, 0.05)'
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '12px',
+                  px: 2,
+                  py: 1
+                }}>
+                  {isLoadingPage && (
+                    <CircularProgress 
+                      size={20} 
+                      sx={{ color: '#4ecdc4', mr: 1 }} 
+                    />
+                  )}
+                  <Typography 
+                    variant="body2" 
+                    sx={{ color: 'rgba(255, 255, 255, 0.8)' }}
+                  >
+                    {isLoadingPage ? 'Loading...' : `Showing page ${currentPage}`}
+                  </Typography>
+                </Box>
+
+                <Button
+                  endIcon={<ArrowForwardIcon />}
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages || isLoadingPage}
+                  sx={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: '16px',
+                    px: 3,
+                    py: 1.5,
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    fontWeight: 600,
+                    '&:hover': {
+                      backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                      border: '1px solid rgba(78, 205, 196, 0.3)',
+                      color: '#4ecdc4'
+                    },
+                    '&:disabled': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                      color: 'rgba(255, 255, 255, 0.3)',
+                      border: '1px solid rgba(255, 255, 255, 0.05)'
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              </Box>
 
               {loading ? (
                 <Box sx={{ 
@@ -719,18 +878,96 @@ const Dashboard: React.FC = () => {
                   </Typography>
                 </Box>
               ) : (
-                <Grid container spacing={4}>
-                  {movies.map((movie) => (
-                    <Grid item key={movie.id} xs={12} sm={6} md={4} lg={3}>
-                      <MovieCard
-                        movie={movie}
-                        onClick={handleMovieClick}
-                        isFavorite={movie.isFavorite}
-                        onFavoriteClick={handleFavoriteClick}
+                <>
+                  {/* Movies Grid */}
+                  <Grid container spacing={4} sx={{ mb: 6 }}>
+                    {movies.map((movie) => (
+                      <Grid item key={movie.id} xs={12} sm={6} md={4} lg={3}>
+                        <MovieCard
+                          movie={movie}
+                          onClick={handleMovieClick}
+                          isFavorite={movie.isFavorite}
+                          onFavoriteClick={handleFavoriteClick}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
+
+                  {/* Advanced Pagination Component */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      borderRadius: '20px',
+                      p: 3,
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      boxShadow: '0 15px 35px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    <Stack spacing={2} alignItems="center">
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          mb: 1
+                        }}
+                      >
+                        Navigate through {totalPages.toLocaleString()} pages of movies
+                      </Typography>
+                      
+                      <Pagination
+                        count={totalPages}
+                        page={currentPage}
+                        onChange={handlePageChange}
+                        color="primary"
+                        size="large"
+                        showFirstButton
+                        showLastButton
+                        disabled={isLoadingPage}
+                        sx={{
+                          '& .MuiPaginationItem-root': {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            fontWeight: 600,
+                            fontSize: '1rem',
+                            minWidth: '44px',
+                            height: '44px',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                              border: '1px solid rgba(78, 205, 196, 0.3)',
+                              color: '#4ecdc4',
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 8px 20px rgba(78, 205, 196, 0.2)'
+                            },
+                            '&.Mui-selected': {
+                              backgroundColor: 'rgba(78, 205, 196, 0.2)',
+                              border: '1px solid rgba(78, 205, 196, 0.5)',
+                              color: '#4ecdc4',
+                              boxShadow: '0 8px 25px rgba(78, 205, 196, 0.3)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(78, 205, 196, 0.25)',
+                                transform: 'translateY(-2px)'
+                              }
+                            },
+                            '&.Mui-disabled': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                              color: 'rgba(255, 255, 255, 0.3)',
+                              border: '1px solid rgba(255, 255, 255, 0.05)'
+                            }
+                          },
+                          '& .MuiPaginationItem-ellipsis': {
+                            color: 'rgba(255, 255, 255, 0.5)'
+                          }
+                        }}
                       />
-                    </Grid>
-                  ))}
-                </Grid>
+                    </Stack>
+                  </Box>
+                </>
               )}
             </Box>
           </Box>

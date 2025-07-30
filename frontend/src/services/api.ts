@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { LoginData, RegisterData, ApiResponse, MovieData } from "../types";
+import type { LoginData, RegisterData, ApiResponse, MovieData, PaginatedMovieResponse } from "../types";
 import { ERROR_MESSAGES } from "../Constants/messages";
 
 // API configurations
@@ -148,14 +148,19 @@ export const favoritesAPI = {
   }
 };
 
-//External API calls(fetchMovies, fetchMovieDetails, fetchPopularMovies)
+// Updated External API calls with pagination support
 export const tmdbAPI = {
-  fetchMovies: async (query: string, page: number = 1) => {
+  fetchMovies: async (query: string, page: number = 1): Promise<PaginatedMovieResponse> => {
     try {
       const response = await tmdbApi.get("/search/movie", {
         params: { api_key: TMDB_API_KEY, query, page },
       });
-      return response.data.results;
+      return {
+        results: response.data.results,
+        page: response.data.page,
+        total_pages: response.data.total_pages,
+        total_results: response.data.total_results
+      };
     } catch (error) {
       console.error("Error fetching movies:", error);
       throw new Error(ERROR_MESSAGES.FETCH_MOVIES);
@@ -174,12 +179,18 @@ export const tmdbAPI = {
     }
   },
 
-  fetchPopularMovies: async (page: number = 1) => {
+  // Updated fetchPopularMovies with full pagination support
+  fetchPopularMovies: async (page: number = 1): Promise<PaginatedMovieResponse> => {
     try {
       const response = await tmdbApi.get("/movie/popular", {
         params: { api_key: TMDB_API_KEY, page },
       });
-      return response.data.results;
+      return {
+        results: response.data.results,
+        page: response.data.page,
+        total_pages: response.data.total_pages,
+        total_results: response.data.total_results
+      };
     } catch (error) {
       console.error("Error fetching popular movies:", error);
       throw new Error(ERROR_MESSAGES.FETCH_POPULAR_MOVIES);
